@@ -1,0 +1,219 @@
+
+#Credentials (example)
+access_token = 'token *******************'
+api_version = '2023-04'
+base_url  = f'https://**************/admin/api/{api_version}/'
+headers = {
+    '******-Access-Token': access_token,
+}
+
+#Read all Orders
+all_response = requests.get(
+    url = base_url + 'orders.json?status=any',
+    headers = headers
+)
+print(response.status_code)
+print(json.dumps(json.loads(response.text), indent=2))
+
+
+#Read an Order
+response = requests.get(
+    url = base_url + 'orders/5268748501167.json',
+    headers = headers
+)
+print(response.status_code)
+data = json.loads(response.text)
+print(data)
+print(data['order'])
+line_item_properties = data['order']['line_items']
+print(line_item_properties)
+
+
+#DataFrame
+import pandas as pd
+#load one order
+data = json.loads(response.text)
+print(data['order'])
+line_item_properties = data['order']['line_items']
+
+#load all orders
+import pandas as pd
+data = json.loads(all_response.text)
+
+for x in data['orders']:
+  line_item_properties = x['line_items']
+  print(line_item_properties)
+
+property_mapping = {
+    'Window Name': 'Window Name',
+    'Width (inch)': 'Width (inch)',
+    'Height (inch)': 'Height (inch)',
+    'Mount': 'Mount',
+    'Material': 'Material',
+    'Pattern': 'Pattern',
+    'Color': 'Color',
+    'Type': 'Type',
+    'Roll Direction': 'Roll Direction',
+    'Remote': 'Remote',
+    'Valance': 'Valance'
+}
+
+window_dict = {value: [] for value in property_mapping.values()}
+
+for line_item in line_item_properties:
+  properties = line_item['properties']
+  for property in properties:
+    property_name = property['name']
+    if property_name in property_mapping:
+            list_name = property_mapping[property_name]
+            window_dict[list_name].append(property['value'])
+df = pd.DataFrame(window_dict, columns=property_mapping.values())
+display(df)
+
+
+#Translation
+!pip install googletrans==4.0.0-rc1
+import pandas as pd
+import re
+from googletrans import Translator
+
+title_dict = {'Window Name':'窗户', 'Width (inch)':'窗宽 (cm)', 'Height (inch)':'窗高 (cm)',
+                   'Mount':'安装', 'Material':'材料', 'Pattern':'款式', 'Color':'颜色', 'Type':'电机',
+                   'Roll Direction':'卷帘方向', 'Remote':'遥控', 'Valance':'罩壳'
+                   }
+
+window_names_dict = {
+    "Window":"窗户",
+    "Door":"门",
+    "Fireplace":"壁炉",
+    "Family":"家庭",
+    "Room":"房",
+    "Living":"客厅",
+    "Dining":"餐厅",
+    "Bedroom":"卧室",
+    "Kitchen":"厨房",
+    "Bath":"浴室",
+    "Bathroom":"浴室",
+    "Office":"办公室",
+    "Master":"主卧",
+    "Guest":"客卧",
+    "L":"左",
+    "R":"右",
+    "Left":"左",
+    "Right":"右",
+    "Middle":"中",
+    "Small":"小",
+    "Big":"大",
+    "Inner":"内",
+    "Outer":"外",
+    "Max":"最大",
+}
+
+other_col_dict = {
+    'Mount': {
+        'Outside': '外置',
+        'Inside': '内置',
+        'Ceiling': '吊顶',
+    },
+    'Material': {
+        'Light Filtering': '透光',
+        'Solar': '阳光',
+        'Blackout': '全遮光',
+        'Zebra': '斑马',
+        'Dream': '梦幻帘',
+        'Curtain': '布艺帘',
+    },
+    'Color': {
+        '-01(Snow White)': '-01(雪白)',
+        "-001(Linen)":"-001(亚麻)",
+        "-02(Off White)":"-02(乳白)",
+        "-02(Linen)":"-02(亚麻)",
+        "-02(Light Grey)":"-02(浅灰)",
+        "-03(Light Beige)":"-03(米色)",
+        "-03(Light Grey)":"-03(浅灰)",
+        "-04(Light Green)":"-04(浅绿)",
+        "-04(Mushroom)":"-04(蘑菇色)",
+        "-04(Light Grey)":"-04(浅灰)",
+        "-06(Light Grey)":"-06(浅灰)",
+        "-12(Gray)":"-12(灰色)",
+    },
+    'Type': {
+        "Motorized Zigbee":"音控",
+        "Motorized BT":"蓝牙",
+        "Motorized Wifi Plug":"wifi插电",
+    },
+    'Roll Direction': {
+        'Reverse': '反向',
+        'Standard': '正向',
+    },
+    'Remote': {
+        'Yes': '有',
+        'No': '无',
+    },
+    'Valance': {
+        'Yes': '方型铝合金',
+        'No': '无罩壳',
+    }
+}
+
+#copy the original data
+translated_df = df.copy()
+
+#for debugging purpose
+to_conv = df['Window Name'].values
+#print(to_conv)
+
+# Window Name Translation Eng -> Chn, using google translate API
+translator = Translator(service_urls=[
+      'translate.google.com',
+      'translate.google.co.kr',
+    ])
+targer_pattern = r'(\d+\.)(.*)'
+
+for i, name in enumerate (translated_df.loc[:,"Window Name"]):
+  match = re.search(targer_pattern, name)
+  if match:
+    order_num = match.group(1)
+    win_name = match.group(2)
+
+#clean up window name
+    win_name = win_name.strip()
+    win_name = re.sub(r'([a-zA-Z])?(\s)?(\d+)(\s)?([a-zA-Z])?', r'\1 \3 \5', win_name)
+    split_str = win_name.split()
+
+
+    trans_list = []
+    for j, word in enumerate(split_str):
+      trans_list.append(window_names_dict.get(word, word))
+
+    print(split_str)
+    print(trans_list)
+
+    win_trans = "".join(trans_list)
+    print(win_trans)
+
+    try:
+      translation = translator.translate(win_trans, dest='zh-cn')
+      win_trans = translation.text
+    except TypeError as e:
+      continue
+
+    translated_df.loc[i, "Window Name"] = order_num + ' ' + win_trans
+
+# Width/Height Conversion to cm
+for i, length in translated_df.loc[:, ["Width (inch)", "Height (inch)"]].iterrows():
+  width = float(translated_df.loc[i,"Width (inch)"])
+  translated_df.loc[i,"Width (inch)"] = str(round((width * 2.54),2))
+  height = float(translated_df.loc[i,"Height (inch)"])
+  translated_df.loc[i,"Height (inch)"] = str(round((height * 2.54),2))
+
+# other columns translation
+for col in translated_df:
+  if col in other_col_dict:
+    translated_df[col] = translated_df[col].map(other_col_dict[col])
+
+#title row translation
+translated_df = translated_df.rename(columns = title_dict)
+
+#translate data frame
+display(translated_df)
