@@ -18,7 +18,7 @@ print(json.dumps(json.loads(response.text), indent=2))
 
 ##Read an Order
 response = requests.get(
-    url = base_url + 'orders/5268748501167.json',
+    url = base_url + 'orders/1234567890.json',
     headers = headers
 )
 print(response.status_code)
@@ -80,7 +80,7 @@ from googletrans import Translator
 title_dict = {'Window Name':'窗户', 'Width (inch)':'窗宽 (cm)', 'Height (inch)':'窗高 (cm)',
                    'Mount':'安装', 'Material':'材料', 'Pattern':'款式', 'Color':'颜色', 'Type':'电机',
                    'Roll Direction':'卷帘方向', 'Remote':'遥控', 'Valance':'罩壳'
-                   }
+              }
 
 window_names_dict = {
     "Window":"窗户",
