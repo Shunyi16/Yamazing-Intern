@@ -1,5 +1,4 @@
-
-#Credentials (example)
+##Credentials (example)
 access_token = 'token *******************'
 api_version = '2023-04'
 base_url  = f'https://**************/admin/api/{api_version}/'
@@ -7,7 +6,8 @@ headers = {
     '******-Access-Token': access_token,
 }
 
-#Read all Orders
+
+##Read all Orders
 all_response = requests.get(
     url = base_url + 'orders.json?status=any',
     headers = headers
@@ -16,7 +16,7 @@ print(response.status_code)
 print(json.dumps(json.loads(response.text), indent=2))
 
 
-#Read an Order
+##Read an Order
 response = requests.get(
     url = base_url + 'orders/5268748501167.json',
     headers = headers
@@ -29,7 +29,7 @@ line_item_properties = data['order']['line_items']
 print(line_item_properties)
 
 
-#DataFrame
+##DataFrame
 import pandas as pd
 #load one order
 data = json.loads(response.text)
@@ -71,7 +71,7 @@ df = pd.DataFrame(window_dict, columns=property_mapping.values())
 display(df)
 
 
-#Translation
+##Translation
 !pip install googletrans==4.0.0-rc1
 import pandas as pd
 import re
