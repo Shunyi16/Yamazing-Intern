@@ -1,3 +1,3 @@
 **Internship Contribution**
 
-I worked on a project that generated a readable table based on the customers’ information and order details. The project was to extract the data from the company’s database and used Python as the programming language to generate the table using Pandas data frame. After generating the table, I translated it into Chinese.
+The project titled 'Product Data Extraction Example' was completed during my internship at a startup company called Yamzing. I created a readable table based on customer information and order details extracted from the company's database. Python was utilized as the programming language, employing Pandas data frames to generate the table. Additionally, I translated the table into Chinese.
